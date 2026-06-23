@@ -2,8 +2,15 @@
 
 A responsive GitHub profile clone built with **Next.js 14** and **Tailwind CSS**. It fetches real user and repository data from the [GitHub REST API](https://docs.github.com/en/rest) — no mock data, no API key required for public profiles.
 
-**Live demo:** https://github-profile-explorer-rosy.vercel.app/
-**Repository:** [github.com/AnishRane13/github-profile-explorer](https://github.com/AnishRane13/github-profile-explorer)
+<p align="center">
+  <a href="https://github-profile-explorer-rosy.vercel.app/">
+    <img src="https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo on Vercel" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/AnishRane13/github-profile-explorer">
+    <img src="https://img.shields.io/badge/Repository-GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="View source on GitHub" />
+  </a>
+</p>
 
 ---
 
