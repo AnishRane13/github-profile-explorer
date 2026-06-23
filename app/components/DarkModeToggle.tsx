@@ -1,38 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getIsDarkMode, setDarkMode } from "@/lib/theme";
 
 export default function DarkModeToggle() {
   const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const shouldBeDark = stored === "dark" || (!stored && prefersDark);
-    setIsDark(shouldBeDark);
-    document.documentElement.classList.toggle("dark", shouldBeDark);
+    setIsDark(getIsDarkMode());
   }, []);
 
   function toggle() {
     const next = !isDark;
     setIsDark(next);
-    document.documentElement.classList.toggle("dark", next);
-    localStorage.setItem("theme", next ? "dark" : "light");
-  }
-
-  if (!mounted) {
-    return (
-      <button
-        type="button"
-        className="rounded-md border border-gh-border p-2 text-gh-muted"
-        aria-label="Toggle dark mode"
-        disabled
-      >
-        <span className="block h-5 w-5" />
-      </button>
-    );
+    setDarkMode(next);
   }
 
   return (
