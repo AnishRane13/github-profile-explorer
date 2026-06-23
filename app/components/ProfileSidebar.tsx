@@ -1,6 +1,14 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { FaGithub } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import {
+  companyHref,
+  formatBlogLabel,
+  formatBlogUrl,
+  formatJoinedDate,
+  hasText,
+} from "@/lib/profile";
 import type { GitHubUser } from "@/types/github";
 import StatsBar from "./StatsBar";
 
@@ -8,23 +16,23 @@ interface ProfileSidebarProps {
   user: GitHubUser;
 }
 
-function companyHref(company: string): string | null {
-  const trimmed = company.trim();
-  if (trimmed.startsWith("@")) {
-    return `https://github.com/${trimmed.slice(1)}`;
-  }
-  return null;
+interface MetaRowProps {
+  icon: ReactNode;
+  children: React.ReactNode;
+}
+
+function MetaRow({ icon, children }: MetaRowProps) {
+  return (
+    <p className="flex items-center justify-center gap-2 lg:justify-start">
+      <span className="shrink-0 text-gh-muted">{icon}</span>
+      {children}
+    </p>
+  );
 }
 
 export default function ProfileSidebar({ user }: ProfileSidebarProps) {
-  const hasProfileMeta =
-    user.bio ||
-    user.company ||
-    user.location ||
-    user.blog ||
-    user.twitter_username;
-
-  const companyLink = user.company ? companyHref(user.company) : null;
+  const companyLink = hasText(user.company) ? companyHref(user.company) : null;
+  const joinedDate = formatJoinedDate(user.created_at);
 
   return (
     <aside className="w-full shrink-0 lg:w-72">
@@ -42,95 +50,93 @@ export default function ProfileSidebar({ user }: ProfileSidebarProps) {
           {user.name ?? user.login}
         </h1>
 
-        {user.name && (
+        {hasText(user.name) && (
           <p className="text-xl text-gh-muted">{user.login}</p>
         )}
 
-        {user.bio && (
-          <p className="mt-3 text-sm text-gh-text">{user.bio}</p>
+        {hasText(user.bio) && (
+          <p className="mt-3 text-sm leading-relaxed text-gh-text">{user.bio}</p>
         )}
 
-        {hasProfileMeta && (
-          <div className="mt-4 w-full space-y-2 text-sm text-gh-muted">
-            {user.company && (
-              <p className="flex items-center justify-center gap-2 lg:justify-start">
-                <svg
-                  className="h-4 w-4 shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                  aria-hidden
-                >
+        <div className="mt-4 w-full space-y-2 text-sm text-gh-muted">
+          {hasText(user.company) && (
+            <MetaRow
+              icon={
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16" aria-hidden>
                   <path d="M1.75 16A1.75 1.75 0 010 14.25V1.75C0 .784.784 0 1.75 0h8.5C11.216 0 12 .784 12 1.75v12.5c0 .085-.006.168-.018.25h2.268a.25.25 0 00.25-.25V8.285a.75.75 0 00-.111-.384l-2.25-3.5a.75.75 0 00-.633-.36H9.75V1.75A.25.25 0 009.5 1.5h-7a.25.25 0 00-.25.25v12.5a.25.25 0 00.25.25h2.268A1.768 1.768 0 011.75 16z" />
                 </svg>
-                {companyLink ? (
-                  <a
-                    href={companyLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gh-link hover:underline"
-                  >
-                    {user.company}
-                  </a>
-                ) : (
-                  user.company
-                )}
-              </p>
-            )}
-
-            {user.location && (
-              <p className="flex items-center justify-center gap-2 lg:justify-start">
-                <svg
-                  className="h-4 w-4 shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                  aria-hidden
-                >
-                  <path d="m12.596 11.596l3.536 3.536-1.06 1.06-3.536-3.536A7.5 7.5 0 109.5 3.5a7.5 7.5 0 012.096 8.096zm-1.06-1.06A6 6 0 1110.5 4.5a6 6 0 01-1.06 6.04z" />
-                </svg>
-                {user.location}
-              </p>
-            )}
-
-            {user.blog && (
-              <p className="flex items-center justify-center gap-2 lg:justify-start">
-                <svg
-                  className="h-4 w-4 shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                  aria-hidden
-                >
-                  <path d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 000 4.95l1.25 1.25a.75.75 0 00-1.06-1.06l-1.25 1.25z" />
-                </svg>
+              }
+            >
+              {companyLink ? (
                 <a
-                  href={
-                    user.blog.startsWith("http")
-                      ? user.blog
-                      : `https://${user.blog}`
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="truncate text-gh-link hover:underline"
-                >
-                  {user.blog.replace(/^https?:\/\//, "")}
-                </a>
-              </p>
-            )}
-
-            {user.twitter_username && (
-              <p className="flex items-center justify-center gap-2 lg:justify-start">
-                <FaXTwitter className="h-4 w-4 shrink-0" aria-hidden />
-                <a
-                  href={`https://twitter.com/${user.twitter_username}`}
+                  href={companyLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gh-link hover:underline"
                 >
-                  @{user.twitter_username}
+                  {user.company}
                 </a>
-              </p>
-            )}
-          </div>
-        )}
+              ) : (
+                user.company
+              )}
+            </MetaRow>
+          )}
+
+          {hasText(user.location) && (
+            <MetaRow
+              icon={
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16" aria-hidden>
+                  <path d="m12.596 11.596l3.536 3.536-1.06 1.06-3.536-3.536A7.5 7.5 0 109.5 3.5a7.5 7.5 0 012.096 8.096zm-1.06-1.06A6 6 0 1110.5 4.5a6 6 0 01-1.06 6.04z" />
+                </svg>
+              }
+            >
+              {user.location}
+            </MetaRow>
+          )}
+
+          {hasText(user.blog) && (
+            <MetaRow
+              icon={
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16" aria-hidden>
+                  <path d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 000 4.95l1.25 1.25a.75.75 0 00-1.06-1.06l-1.25 1.25z" />
+                </svg>
+              }
+            >
+              <a
+                href={formatBlogUrl(user.blog)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="truncate text-gh-link hover:underline"
+              >
+                {formatBlogLabel(user.blog)}
+              </a>
+            </MetaRow>
+          )}
+
+          {hasText(user.twitter_username) && (
+            <MetaRow icon={<FaXTwitter className="h-4 w-4" aria-hidden />}>
+              <a
+                href={`https://twitter.com/${user.twitter_username}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gh-link hover:underline"
+              >
+                @{user.twitter_username}
+              </a>
+            </MetaRow>
+          )}
+
+          <MetaRow
+            icon={
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16" aria-hidden>
+                <path d="M1.75 0A1.75 1.75 0 000 1.75v12.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25V1.75A1.75 1.75 0 0014.25 0H1.75zM1.5 1.75a.25.25 0 01.25-.25h12.5a.25.25 0 01.25.25v12.5a.25.25 0 01-.25.25H1.75a.25.25 0 01-.25-.25V1.75z" />
+                <path d="M4.75 4a.75.75 0 00-.75.75v4.5c0 .414.336.75.75.75h6.5a.75.75 0 00.75-.75v-4.5A.75.75 0 0011.25 4h-6.5zM5.5 5.5h5v3h-5v-3z" />
+              </svg>
+            }
+          >
+            Joined {joinedDate}
+          </MetaRow>
+        </div>
 
         <div className="mt-4 w-full">
           <StatsBar

@@ -7,6 +7,7 @@ import RepoCard from "./RepoCard";
 import SearchBar from "./SearchBar";
 
 type SortOption = "updated" | "name" | "stars";
+type TypeOption = "all" | "public" | "private" | "forks" | "archived";
 
 interface RepoListProps {
   repos: GitHubRepo[];
@@ -22,6 +23,7 @@ export default function RepoList({ repos, totalRepoCount }: RepoListProps) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOption>("updated");
   const [language, setLanguage] = useState("all");
+  const [type, setType] = useState<TypeOption>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +48,24 @@ export default function RepoList({ repos, totalRepoCount }: RepoListProps) {
       result = result.filter((repo) => repo.language === language);
     }
 
+    switch (type) {
+      case "forks":
+        result = result.filter((repo) => repo.fork);
+        break;
+      case "archived":
+        result = result.filter((repo) => repo.archived);
+        break;
+      case "public":
+        result = result.filter((repo) => !repo.private);
+        break;
+      case "private":
+        result = result.filter((repo) => repo.private);
+        break;
+      case "all":
+      default:
+        break;
+    }
+
     return [...result].sort((a, b) => {
       switch (sort) {
         case "name":
@@ -59,7 +79,7 @@ export default function RepoList({ repos, totalRepoCount }: RepoListProps) {
           );
       }
     });
-  }, [repos, query, language, sort]);
+  }, [repos, query, language, type, sort]);
 
   const totalPages = Math.max(
     1,
@@ -73,7 +93,7 @@ export default function RepoList({ repos, totalRepoCount }: RepoListProps) {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, sort, language]);
+  }, [query, sort, language, type]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -86,26 +106,32 @@ export default function RepoList({ repos, totalRepoCount }: RepoListProps) {
     listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  const hasActiveFilters = query.trim() !== "" || language !== "all";
+  const hasActiveFilters =
+    query.trim() !== "" || language !== "all" || type !== "all";
 
   return (
     <div ref={listRef} className="space-y-4">
-      <div className="border-b border-gh-border pb-4">
-        <div className="mb-4 flex items-center gap-2">
+      <nav
+        className="border-b border-gh-border"
+        aria-label="Profile sections"
+      >
+        <div className="inline-flex items-center gap-2 border-b-2 border-[#fd8c73] px-1 pb-3 text-sm font-semibold text-gh-text">
           <svg
-            className="h-4 w-4 text-gh-muted"
+            className="h-4 w-4"
             fill="currentColor"
             viewBox="0 0 16 16"
             aria-hidden
           >
             <path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 010-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8v-4.5a2.5 2.5 0 015 0V5.5a.75.75 0 001.5 0V4.5a4 4 0 00-8 0v4.75a.75.75 0 01-1.5 0V4.5A2.5 2.5 0 014.5 2h7z" />
           </svg>
-          <h2 className="text-sm font-semibold text-gh-text">Repositories</h2>
-          <span className="rounded-full border border-gh-border px-2 py-0.5 text-xs text-gh-muted">
+          Repositories
+          <span className="rounded-full border border-gh-border bg-gh-bg px-2 py-0.5 text-xs font-normal text-gh-muted">
             {totalRepoCount}
           </span>
         </div>
+      </nav>
 
+      <div className="pb-4">
         <SearchBar
           value={query}
           onChange={setQuery}
@@ -113,7 +139,23 @@ export default function RepoList({ repos, totalRepoCount }: RepoListProps) {
           totalCount={repos.length}
         />
 
-        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <label className="flex items-center gap-2 text-sm text-gh-muted">
+            <span className="shrink-0">Type:</span>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value as TypeOption)}
+              className={selectClassName}
+              aria-label="Filter by repository type"
+            >
+              <option value="all">All</option>
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+              <option value="forks">Forks</option>
+              <option value="archived">Archived</option>
+            </select>
+          </label>
+
           <label className="flex items-center gap-2 text-sm text-gh-muted">
             <span className="shrink-0">Sort by:</span>
             <select
@@ -166,9 +208,15 @@ export default function RepoList({ repos, totalRepoCount }: RepoListProps) {
           <p className="mt-3 text-sm font-medium text-gh-text">
             {query.trim()
               ? "No repositories match your search"
-              : language !== "all"
-                ? `No repositories found for ${language}`
-                : "No repositories found"}
+              : type === "private"
+                ? "No private repositories to show"
+                : type === "archived"
+                  ? "No archived repositories found"
+                  : type === "forks"
+                    ? "No forked repositories found"
+                    : language !== "all"
+                      ? `No repositories found for ${language}`
+                      : "No repositories found"}
           </p>
           {hasActiveFilters && (
             <p className="mt-1 text-sm text-gh-muted">

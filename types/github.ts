@@ -11,6 +11,7 @@ export interface GitHubUser {
   blog: string | null;
   company: string | null;
   twitter_username: string | null;
+  created_at: string;
 }
 
 export interface GitHubRepo {
@@ -24,4 +25,6 @@ export interface GitHubRepo {
   language: string | null;
   updated_at: string;
   fork: boolean;
+  archived: boolean;
+  private: boolean;
 }

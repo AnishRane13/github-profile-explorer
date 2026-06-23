@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { GitHubUser } from "@/types/github";
 import DarkModeToggle from "./DarkModeToggle";
 
@@ -31,13 +30,15 @@ export default function Navbar({ user }: NavbarProps) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`${user.login} on GitHub`}
+            className="shrink-0"
           >
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={user.avatar_url}
-              alt=""
+              alt={`${user.login}'s avatar`}
               width={32}
               height={32}
-              className="rounded-full border border-gh-border transition-opacity hover:opacity-80"
+              className="h-8 w-8 rounded-full border border-gh-border object-cover transition-opacity hover:opacity-80"
             />
           </a>
         </div>
