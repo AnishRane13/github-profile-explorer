@@ -2,6 +2,7 @@ import type { GitHubRepo, GitHubUser } from "@/types/github";
 
 export const GITHUB_USERNAME = "anishrane13";
 const REVALIDATE_SECONDS = 3600;
+const REPOS_PER_PAGE = 100;
 
 async function githubFetch<T>(url: string): Promise<T> {
   const res = await fetch(url, {
@@ -36,7 +37,17 @@ export async function getUser(
 export async function getRepos(
   username: string = GITHUB_USERNAME
 ): Promise<GitHubRepo[]> {
-  return githubFetch<GitHubRepo[]>(
-    `https://api.github.com/users/${username}/repos?sort=updated&per_page=20`
-  );
+  const allRepos: GitHubRepo[] = [];
+  let page = 1;
+
+  while (true) {
+    const repos = await githubFetch<GitHubRepo[]>(
+      `https://api.github.com/users/${username}/repos?sort=updated&per_page=${REPOS_PER_PAGE}&page=${page}`
+    );
+    allRepos.push(...repos);
+    if (repos.length < REPOS_PER_PAGE) break;
+    page++;
+  }
+
+  return allRepos;
 }
